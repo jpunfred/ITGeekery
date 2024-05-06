@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>My Account</title>
+        <link rel="stylesheet" href="{% static 'css/account.css' %}">
+        <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    </head>
+
+    
+    <body>
+        <div id="mainHeader">
+            <div style="display: flex; align-items: center;">
+                <!-- Toggle Sidebar Button -->
+                <button class="btn btn-secondary" id="toggleSidebar">☰</button>
+                <img src="{% static 'images/ITGeekeryLogo.png' %}" alt="IT Geekery Logo" style="height: 40px; margin: 15px;">
+                <h1 style="margin: 0;">Account</h1>
+            </div>
+            <div>
+                <!-- Night/Light Toggle -->
+                <label class="switch">
+                    <input type="checkbox" id="colorSwitch">
+                    <span class="slider round"></span>
+                </label>
+                <!-- Top Introduction -->
+                {% if user.first_name %}
+                    <span>Hello, {{ user.first_name }} |</span>
+                {% else %}
+                    <span>Hello, {{ user.username }} |</span>
+                {% endif %}
+                <a href="{% url 'dashboard' %}">My Dashboard</a>
+                <span>|</span> <a href="{% url 'login' %}">Logout</a>
+            </div>
+        </div>
+        <!-- Side Bar -->
+        <div class="sidebar" id="sidebar">
+            <div id="sidebarMenu">
+                <ul class="nav flex-column">
+                    <li class="nav-item"><a class="nav-link" href="{{ user.profile.tickets_url }}">Tickets</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ user.profile.device_management_url }}">Device Management</a></li>
+                    <li class="nav-item"><a class="nav-link" href="https://www.opencve.io/cve?cvss=critical">OpenCVE</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ user.profile.company_homepage_url }}">Company</a></li>
+                </ul>
+            </div>
+        </div>
+        <!-- Left Update Profile Side -->
+        <div class="content">
+            <div class="account-container">
+                <div class="form-section">
+                    <h2>Edit Profile</h2>
+                    <form method="post" action="{% url 'account' %}">
+                        {% csrf_token %}
+                        {{ p_form.as_p }}
+                        <button type="submit" name="update_profile">Update Profile</button>
+                    </form>
+                </div>
+                <div class="divider"></div>
+                <!-- Right Password Side -->
+                <div class="form-section">
+                    <h2>Change Password</h2>
+                    <form method="post" action="{% url 'account' %}">
+                        {% csrf_token %}
+                        {{ password_form.as_p }}
+                        <button type="submit" name="change_password">Change Password</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    
+        <script>
+            // Sidebar Toggle
+            document.getElementById('toggleSidebar').addEventListener('click', function() {
+                var sidebar = document.getElementById('sidebar');
+                var content = document.querySelector('.content');
+                sidebar.classList.toggle('collapsed');
+                content.classList.toggle('collapsed');
+            });
+            // Light/Night Mode
+            document.getElementById('colorSwitch').addEventListener('change', function() {
+                updateColors(this.checked);
+            });
+
+            // Light/Night Mode
+            function updateColors(checked) {
+                var body = document.body;
+                body.style.backgroundColor = checked ? '#fff' : '#444';
+                body.style.color = checked ? '#000' : '#fff';
+            }
+
+            window.onload = function() {
+                var colorSwitch = document.getElementById('colorSwitch');
+                updateColors(colorSwitch.checked);
+            };
+        </script>
+    </body>
+</html>

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</head>
+    <body>
+        <div id="mainHeader">
+            <div style="display: flex; align-items: center;">
+                <button class="btn btn-secondary" id="toggleSidebar">☰</button>
+                <img src="{% static 'images/ITGeekeryLogo.png' %}" alt="IT Geekery Logo" style="height: 40px; margin: 15px;">
+                <h1 style="margin: 0;">Dashboard</h1>
+            </div>
+            <div>
+                <!-- Night/Light Mode -->
+                <label class="switch">
+                    <input type="checkbox" id="colorSwitch">
+                    <span class="slider round"></span>
+                </label>
+                <!-- Introduction -->
+                {% if user.first_name %}
+                    <span>Hello, {{ user.first_name }} |</span>
+                {% else %}
+                    <span>Hello, {{ user.username }} |</span>
+                {% endif %}
+                <a href="{% url 'account' %}">My Account </a>
+                <span>|</span> <a href="{% url 'login' %}">Logout</a>
+            </div>
+        </div>
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+        <div id="sidebarMenu">
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ user.profile.tickets_url }}">Tickets</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ user.profile.device_management_url }}">Device Management</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="https://www.opencve.io/cve?cvss=critical">OpenCVE</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ user.profile.company_homepage_url }}">Company</a>
+                </li>
+            </ul>
+        </div>
+        <div class="footer-content">
+            Powered by API from
+            <a href="https://nvd.nist.gov/developers/vulnerabilities" class="footer-link">
+                <img src="{% static 'images/NIST-logo.webp' %}" alt="NIST Logo" class="footer-logo">
+            </a>
+        </div>
+    </div>
+        <!-- CVE Table -->
+        <div class="content">
+            <div class="dashboard-row">
+                <div class="cve-container">
+                    {% if cves %}
+                    <table class="table table-dark table-rounded">
+                        <thead>
+                            <tr>
+                                <th scope="col">CVE #</th>
+                                <th scope="col">Keyword</th>
+                                <th scope="col">Published Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for cve in cves %}
+                            <tr>
+                                <td><a href="https://nvd.nist.gov/vuln/detail/{{ cve.cve_id }}" target="_blank">{{ cve.cve_id }}</a></td>
+                                <td>{{ cve.keyword|capfirst }}</td>
+                                <td>{{ cve.published_date }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="3">No data found.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                        <p>{{ message }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            <!-- Network Ping Response -->
+            <div class="right-side">
+                <div class="network-status-container">
+                    <h2>Network Ping</h2>
+                    {% for status in network_status %}
+                    <div class="network-column">
+                        <table class="table">
+                            <tbody>
+                                <tr>
+                                    <td style="color: #00A5D7;">{{ status.host }}</td>
+                                    <td class="time-cell" style="color: {{ status.color }};">{{ status.time }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    {% endfor %}
+                </div>
+                <!-- News Scroll -->
+                <div class="news-feed-container">
+                    <h2>Latest News</h2>
+                    <div id="newsCarousel" class="carousel slide" data-ride="carousel">
+                        <div class="carousel-inner">
+                            {% for news in news_feed %}
+                            <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                                <a href="{{ news.link }}" target="_blank">
+                                    <h4>{{ news.title }}</h4>
+                                </a>
+                                {% if news.image_url %}
+                                <img src="{{ news.image_url }}" alt="News image" style="width: 100%; max-height: 200px; object-fit: cover;">
+                                {% endif %}
+                                <p>Published: {{ news.published }}</p>
+                                <p>{{ news.snippet }}</p>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <!-- News Scroll Buttons -->
+                        <a class="carousel-control-prev" href="#newsCarousel" role="button" data-slide="prev">
+                            <span class="carousel-control-prev-icon"></span>
+                        </a>
+                        <a class="carousel-control-next" href="#newsCarousel" role="button" data-slide="next">
+                            <span class="carousel-control-next-icon"></span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    
+        <script>
+            // Sidebar Animation
+        document.addEventListener('DOMContentLoaded', function() {
+            var toggleSidebarButton = document.getElementById('toggleSidebar');
+            var sidebar = document.getElementById('sidebar');
+            var content = document.querySelector('.content');
+    
+            if (toggleSidebarButton && sidebar && content) {
+                toggleSidebarButton.addEventListener('click', function() {
+                    sidebar.classList.toggle('collapsed');
+                    content.classList.toggle('collapsed');
+                });
+            } else {
+                console.error("One or more elements are missing: #toggleSidebar, #sidebar, or .content");
+            }
+        });
+            // Light/Night Mode
+            document.getElementById('colorSwitch').addEventListener('change', function() {
+                updateColors(this.checked);
+            });
+    
+            function updateColors(checked) {
+                var body = document.body;
+                body.style.backgroundColor = checked ? '#fff' : '#444';
+                body.style.color = checked ? '#000' : '#fff';
+            }
+    
+            
+            window.onload = function() {
+                var colorSwitch = document.getElementById('colorSwitch');
+                updateColors(colorSwitch.checked);
+        };
+        </script>
+    
+        <footer class="footer">
+        <div class="footer-content">
+            Powered by API from
+            <a href="https://nvd.nist.gov/developers/vulnerabilities" class="footer-link">
+                <img src="{% static 'images/NIST-logo.webp' %}" alt="NIST Logo" class="footer-logo">
+            </a>
+        </div>
+    </footer>
+    
+    </body>
+</html>
